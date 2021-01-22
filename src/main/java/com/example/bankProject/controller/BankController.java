@@ -36,7 +36,7 @@ public class BankController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Bank> updateEmployee(@PathVariable(value = "id") Long bankId,
+    public ResponseEntity<Bank> updateBank(@PathVariable(value = "id") Long bankId,
                                                    @Validated @RequestBody Bank bankDetails) throws ResourceNotFoundException {
         Bank bank = bankRepository.findById(bankId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank not found for this id :: " + bankId));
@@ -48,7 +48,7 @@ public class BankController {
     }
 
     @DeleteMapping("/{id}")
-    public Map<String, Boolean> deleteEmployee(@PathVariable(value = "id") Long bankId)
+    public Map<String, Boolean> deleteBank(@PathVariable(value = "id") Long bankId)
             throws ResourceNotFoundException {
         Bank bank = bankRepository.findById(bankId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank not found for this id :: " + bankId));

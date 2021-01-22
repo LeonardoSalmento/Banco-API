@@ -36,7 +36,7 @@ public class AgencyController {
     }
 
     @PutMapping("/questions/{questionId}/answers/{agencyId}")
-    public Agency updateAnswer(@PathVariable Long bankId,
+    public Agency updateAgency(@PathVariable Long bankId,
                                @PathVariable Long agencyId,
                                @Validated @RequestBody Agency agencyRequest) throws ResourceNotFoundException {
         if(!bankRepository.existsById(bankId)) {
@@ -53,7 +53,7 @@ public class AgencyController {
 
 
     @DeleteMapping("/banks/{bankId}/agencies/{agencyId}")
-    public Map<String, Boolean> deleteEmployee(@PathVariable Long agencyId)
+    public Map<String, Boolean> deleteAgency(@PathVariable Long agencyId)
             throws ResourceNotFoundException {
         Agency agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Agency not found for this id :: " + agencyId));
