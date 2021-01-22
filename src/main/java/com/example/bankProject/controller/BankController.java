@@ -1,5 +1,6 @@
 package com.example.bankProject.controller;
 
+import com.example.bankProject.exception.ConflictException;
 import com.example.bankProject.exception.ResourceNotFoundException;
 import com.example.bankProject.model.Bank;
 import com.example.bankProject.repository.BankRepository;
@@ -31,7 +32,18 @@ public class BankController {
     }
 
     @PostMapping("/")
-    public Bank createBank(@RequestBody Bank bank){
+    public Bank createBank(@RequestBody Bank bank) throws ConflictException{
+        String newName = bank.getName();
+        String newCompensationCode = bank.getCompensationCode();
+
+        if (bankRepository.findByName(newName) != null){
+            throw new ConflictException("This name already exists");
+        }
+
+        if (bankRepository.findByCompensationCode(newCompensationCode) != null){
+            throw new ConflictException("This Compensation Code already exists");
+        }
+
         return this.bankRepository.save(bank);
     }
 
