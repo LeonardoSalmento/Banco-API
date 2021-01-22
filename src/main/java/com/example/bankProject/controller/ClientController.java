@@ -1,5 +1,6 @@
 package com.example.bankProject.controller;
 
+import com.example.bankProject.exception.ConflictException;
 import com.example.bankProject.exception.ResourceNotFoundException;
 import com.example.bankProject.model.Account;
 import com.example.bankProject.model.Agency;
@@ -42,10 +43,14 @@ public class ClientController {
     }
 
     @PostMapping("/accounts/clients/{agencyId}")
-    public Client createClient(@PathVariable Long agencyId ,@RequestBody Client client) throws ResourceNotFoundException {
+    public Client createClient(@PathVariable Long agencyId ,@RequestBody Client client) throws ResourceNotFoundException , ConflictException{
         Agency agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Agency not found for this id :: " + agencyId));
 
+        String newEmail = client.getEmail();
+        if (clientRepository.findByEmail(newEmail) != null){
+            throw new ConflictException("This email already exists");
+        };
         Client newClient = this.clientRepository.save(client);
         Account newAccount = createAccount(client, agency);
         return this.clientRepository.save(client);
