@@ -3,12 +3,15 @@ package com.example.bankProject.controller;
 import com.example.bankProject.exception.BadRequestException;
 import com.example.bankProject.exception.ResourceNotFoundException;
 import com.example.bankProject.model.Account;
+import com.example.bankProject.model.BankStatement;
 import com.example.bankProject.repository.AccountRepository;
+import com.example.bankProject.repository.BankStatementRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -16,6 +19,9 @@ public class AccountController {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private BankStatementRepository bankStatementRepository;
 
     private ObjectNode data;
 
@@ -41,7 +47,17 @@ public class AccountController {
             throw new BadRequestException("Insufficient balance for withdrawal");
         }
 
+        BankStatement bankStatement = new BankStatement();
+        bankStatement.setAccount(account);
+        bankStatement.setBeforeBalance(account.getBalance());
+        bankStatement.setAfterBalance(newBalance);
+        bankStatement.setOperation("withdraw");
+        bankStatement.setOperationDate(new Date());
+
+
         account.setBalance(newBalance);
+
+        bankStatementRepository.save(bankStatement);
         return accountRepository.save(account);
     }
 
@@ -58,7 +74,16 @@ public class AccountController {
 
         Double newBalance = value + account.getBalance();
 
+        BankStatement bankStatement = new BankStatement();
+        bankStatement.setAccount(account);
+        bankStatement.setBeforeBalance(account.getBalance());
+        bankStatement.setAfterBalance(newBalance);
+        bankStatement.setOperation("deposit");
+        bankStatement.setOperationDate(new Date());
+
         account.setBalance(newBalance);
+
+        bankStatementRepository.save(bankStatement);
         return accountRepository.save(account);
     }
 
@@ -90,8 +115,26 @@ public class AccountController {
 
         Double newBalanceB = value + accountB.getBalance();
 
+        BankStatement bankStatementA = new BankStatement();
+        bankStatementA.setAccount(accountA);
+        bankStatementA.setBeforeBalance(accountA.getBalance());
+        bankStatementA.setAfterBalance(newBalanceA);
+        bankStatementA.setOperation("transfer");
+        bankStatementA.setOperationDate(new Date());
+
+        BankStatement bankStatementB = new BankStatement();
+        bankStatementB.setAccount(accountB);
+        bankStatementB.setBeforeBalance(accountB.getBalance());
+        bankStatementB.setAfterBalance(newBalanceB);
+        bankStatementB.setOperation("transfer");
+        bankStatementB.setOperationDate(new Date());
+
         accountA.setBalance(newBalanceA);
         accountB.setBalance(newBalanceB);
+
+        bankStatementRepository.save(bankStatementA);
+        bankStatementRepository.save(bankStatementB);
+
         accountRepository.save(accountA);
         accountRepository.save(accountB);
         return accountA;
@@ -103,6 +146,12 @@ public class AccountController {
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found for this id :: " + accountId));
 
         return accountRepository.save(account);
+    }
+
+    @GetMapping("/accounts/BankStament/{accountId}")
+    public List<BankStatement> showBankStatementByAccount(@PathVariable Long accountId){
+        List<BankStatement> bankStatements = bankStatementRepository.findByAccountId(accountId);
+        return bankStatements;
     }
 
     private Double transformJsonToDoble(ObjectNode data){
